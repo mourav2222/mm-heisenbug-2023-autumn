@@ -10,6 +10,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.net.CookieStore;
 
 public abstract class RestService {
 
@@ -19,6 +20,10 @@ public abstract class RestService {
   protected final Retrofit retrofit;
 
   public RestService(String baseUrl, boolean followRedirect, Interceptor... interceptors) {
+    this(baseUrl, followRedirect, null, interceptors);
+  }
+
+  public RestService(String baseUrl, boolean followRedirect, CookieStore cookieStore, Interceptor... interceptors) {
     OkHttpClient.Builder builder = new OkHttpClient.Builder()
         .followRedirects(followRedirect);
 
@@ -28,7 +33,11 @@ public abstract class RestService {
       }
     }
 
-    builder.cookieJar(new JavaNetCookieJar(new CookieManager(ThreadLocalCookieStore.INSTANCE, CookiePolicy.ACCEPT_ALL)));
+    if (cookieStore != null) {
+      builder.cookieJar(new JavaNetCookieJar(new CookieManager(cookieStore, CookiePolicy.ACCEPT_ALL)));
+    } else {
+      builder.cookieJar(new JavaNetCookieJar(new CookieManager(ThreadLocalCookieStore.INSTANCE, CookiePolicy.ACCEPT_ALL)));
+    }
     builder.addNetworkInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC));
 
     this.httpClient = builder.build();
