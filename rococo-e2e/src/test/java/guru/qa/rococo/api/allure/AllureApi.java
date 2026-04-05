@@ -3,14 +3,14 @@ package guru.qa.rococo.api.allure;
 import com.fasterxml.jackson.databind.JsonNode;
 import guru.qa.rococo.model.allure.AllureProject;
 import guru.qa.rococo.model.allure.AllureResults;
+import guru.qa.rococo.model.allure.LoginRequest;
 import retrofit2.Call;
-import retrofit2.http.Body;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.Path;
-import retrofit2.http.Query;
+import retrofit2.http.*;
 
 public interface AllureApi {
+
+  @POST("allure-docker-service/login")
+  Call<JsonNode> login(@Body LoginRequest request);
 
   @POST("allure-docker-service/send-results")
   Call<JsonNode> uploadResults(@Query("project_id") String projectId,

@@ -22,11 +22,21 @@ bash ./gradlew jibDockerBuild -x :rococo-e2e:test
 cd rococo-client || exit 1
 echo "### Build frontend image ###"
 docker build --build-arg PROFILE=${PROFILE} -t dtuchs/rococo-client-${PROFILE}:${FRONT_VERSION} -t dtuchs/rococo-client-${PROFILE}:latest .
+cd ../
+
+#cd rococo-e2e || exit 1
+echo "### Build e2e tests image ###"
+docker build -f rococo-e2e/Dockerfile --build-arg PROFILE=${PROFILE} -t dtuchs/rococo-e2e-${PROFILE}:${FRONT_VERSION} -t dtuchs/rococo-e2e-${PROFILE}:latest .
 
 echo "### List rococo images ###"
-cd ../
 docker images | grep rococo
 
-echo "### Deploy (docker compose) rococo application ###"
-PROFILE="${PROFILE}" docker compose up -d
-docker ps -a | grep rococo
+echo "### Deploy (docker compose) rococo application with e2e tests ###"
+ARCH=$( [ "$(uname -m)" = "x86_64" ] && echo "amd64" || echo "arm64" )
+echo "ARCH: ${ARCH}"
+
+PROFILE="${PROFILE}" ARCH="${ARCH}" \
+ALLURE_DOCKER_API="http://debian12vm-003:5050" \
+docker compose -f docker-compose-e2e.yml up -d
+
+docker ps -a | grep -E "rococo|selenoid"

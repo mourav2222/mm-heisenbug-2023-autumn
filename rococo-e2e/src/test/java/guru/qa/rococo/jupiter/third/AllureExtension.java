@@ -18,7 +18,8 @@ import java.util.stream.Stream;
 
 public class AllureExtension implements SuiteExtension {
 
-  private static final boolean inDocker = "docker".equals(System.getProperty("test.env"));
+//  private static final boolean inDocker = "docker".equals(System.getProperty("test.env"));
+  private static final boolean inDocker = true;
 
   private static final Base64.Encoder encoder = Base64.getEncoder();
   private static final String allurePath = "./rococo-e2e/build/allure-results";
@@ -29,6 +30,10 @@ public class AllureExtension implements SuiteExtension {
   @Override
   public void beforeAllTests(ExtensionContext context) {
     if (inDocker) {
+      allureApi.login(
+          System.getProperty("ALLURE_DOCKER_USERNAME", "vovaxytin"),
+          System.getProperty("ALLURE_DOCKER_PASSWORD", "xyR6P1S3NgzJ8DTi")
+      );
       allureApi.createProjectIfNotExist(projectId);
       allureApi.clean(projectId);
     }
